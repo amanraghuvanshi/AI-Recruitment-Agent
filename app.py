@@ -58,6 +58,42 @@ class CustomZoomTool(ZoomTool):
         except requests.RequestException as e:
             logger.error(f"Error Fetching access token: {e}")
             return ""
-        
-        
+    
+    def _set_parent_token(self, token: str) -> None:
+        """
+        Helper Function to set the token in parent ZoomTool class
+        """
+        if token:
+            self._ZoomTool_access_token = token
+            
+# ROLE Requirements as a constant dictionary
+
+ROLE_REQUIREMENTS: Dict[str, str] = {
+    "ai_ml_engineer": """
+        Required Skills:
+        - Python, Pytorch/Tensorflow
+        - Machine Learning Algorithms and Frameworks
+        - Deep Learning and Neural Networks
+        - Data Preprocessing and Analysis
+        - MLOps and Model Deployment
+        - RAG, LLMs, Finetuning and Prompt Engineering
+    """,
+    "Frontend Developer / Engineer":"""
+        Required Skills:
+        - React/Vue.js/Angular
+        - HTML5, CSS3, JavaScript/TypeScript
+        - Responsive Design
+        - State Management
+        - Frontend Testing
+    """,
+    "Backend Engineer": """
+        Required Skills:
+        - Python/Java/Node.js
+        - REST APIs
+        - Database Design and Management
+        - System Architecture
+        - Cloud Services (AWS/GCP/Azure)
+        - Kubernetes, Docker, CI/CD
+    """
+}
             
