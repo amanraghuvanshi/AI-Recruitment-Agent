@@ -65,8 +65,8 @@ Before launching the app, follow these essential setup steps:
 
 ```bash
 # Clone the repository
-git clone https://github.com/amanraghuvanshi/AI-Recruitment-Agent-.git
-cd advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team
+git clone https://github.com/amanraghuvanshi/AI-Recruitment-Agent.git
+cd folder/ai_recruitment_agent_team
 
 # Install required packages
 pip install -r requirements.txt
