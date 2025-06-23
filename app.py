@@ -96,4 +96,45 @@ ROLE_REQUIREMENTS: Dict[str, str] = {
         - Kubernetes, Docker, CI/CD
     """
 }
+
+#  safely initialize only the required keys in st.session_state with default values, preventing errors during use in a Streamlit app.
+def init_session_state() -> None:
+    """Initialize only the necessary session state variables."""
+    defaults = {
+        "candidate_email": "",
+        "openai_api_key" : "",
+        "resume_text": "",
+        "analysis_complete": False,
+        "is_selected": False,
+        "zoom_account_id": "",
+        "zoom_client_id": "",
+        "zoom_client_secret": "",
+        "email_sender": "",
+        "email_passkey": "",
+        "company_name": "",
+        "current_pdf": None
+    }
+    
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
             
+# This function returns a function if the API is already initialized
+def create_resume_analyzer() -> Agent:
+    """Creates and returns a resume analysis agent"""
+    if not st.session_state.openai_api_key:
+        st.error("Please enter your OpenAI API Key before procedding!")
+        return None
+    return Agent(
+        model = OpenAIChat("gpt-4.1-nano", api_key = st.session_state.openai_api_key),
+        description = "You are a expert Technical Recruiter who analyzes resumes",
+        instructions=[
+            "Analyze the resume against the provided job requirements",
+            "Be linient with AI/ML candidates who show strong potential",
+            "Consider project experience as valid experience",
+            "Value hands-on-experience with key technologies",
+            "Return the result in a JSON response with selection decision and feedback"
+        ],
+        markdown=True
+    )
+    
