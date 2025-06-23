@@ -126,7 +126,7 @@ def create_resume_analyzer() -> Agent:
         st.error("Please enter your OpenAI API Key before procedding!")
         return None
     return Agent(
-        model = OpenAIChat("gpt-4.1-nano", api_key = st.session_state.openai_api_key),
+        model = OpenAIChat(id="gpt-4.1-nano", api_key = st.session_state.openai_api_key),
         description = "You are a expert Technical Recruiter who analyzes resumes",
         instructions=[
             "Analyze the resume against the provided job requirements",
@@ -138,3 +138,58 @@ def create_resume_analyzer() -> Agent:
         markdown=True
     )
     
+def create_email_agent() -> Agent:
+    return Agent(
+        model = OpenAIChat(
+            id = "gpt-4.1-nano",
+            api_key=st.session_state.openai_api_key
+        ),
+        description="You are a expert technical recruiter coordinator handling email communications.",
+        instructions=[
+            "Draft and send professional recruitment emails",
+            "Act like a huma writing an email and eliminate unnecessary capital letters",
+            "Maintain a friendly yet professional tone",
+            f"Always end the mail with exactly: 'Best Regards\nTeam HR at {st.session_state.company_name}",
+            "Never include the sender's or receiver's name in the signature",
+            f"The name of the company is {st.session_state.company_name}"
+        ],
+        markdown=True, 
+        show_tool_calls=True
+    )
+
+def create_scheduler_agent() -> Agent:
+    zoom_tools = CustomZoomTool(
+        account_id = st.session_state.zoom_accound_id,
+        client_id = st.session_state.zoom_client_id,
+        client_secret = st.session_state.zoom_client_secret
+    )
+    
+    return Agent(
+        name = "Interview Scheduler",
+        model = OpenAIChat(
+            id = "gpt-4o-mini",
+            api_key = st.session_state.openai_api_key
+        ),
+        tools = [zoom_tools],
+        description = "You are an interview scheduling coordinator",
+        instructions = [
+            "You are an expert at scheduling technical interviews using zoom",
+            "Schedule interviews during business hours (9AM - 5PM IST)",
+            "Create meetings with proper titles and descriptions",
+            "Ensure all meeting details are included in responses",
+            "Use ISO 8601 format for dates",
+            "Handle scheduling errors gracefully"
+        ],
+        markdown=True,
+        show_tool_calls=True
+    )
+    
+def extract_text_from_pdf(pdf_file) -> str:
+    try:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+        return text
+    except Exception as e:
+        st.error(f"Error while parsing PDF File: {str(e)}")
+        return ""
