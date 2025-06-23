@@ -330,7 +330,7 @@ def main() -> None:
         # Email Settings
         email_sender = st.text_input("Sender Email", value=st.session_state.email_sender, help="Email address to send from")
         
-        email_passkey = st.text_input("Enter Email App Password", value=st.session_state.email_password, type="password", help="App-specific password for email")
+        email_passkey = st.text_input("Enter Email App Password", value=st.session_state.email_passkey, type="password", help="App-specific password for email")
         
         company_name = st.text_input("Company Name", value=st.session_state.company_name, help = "Name to use in email communications")
         
