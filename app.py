@@ -459,3 +459,74 @@ def main() -> None:
                         except Exception as e:
                             logger.error(f"Error sending rejection mail: {str(e)}")
                             st.error("Could not send the email. Please try again.")
+    
+    if st.session_state.get('analysis_complete') and st.session_state.get('is_selected', False):
+        st.success("Congratulations! Your skills match our requirements.")
+        st.info("Click 'Proceed with Application' to continue with the interview process.")
+        
+        if st.button("Proceed with Application", key="proceed_button"):
+            print("DEBUG: Proceed button clicked")  # Debug
+            with st.spinner("🔄 Processing your application..."):
+                try:
+                    print("DEBUG: Creating email agent")  # Debug
+                    email_agent = create_email_agent()
+                    print(f"DEBUG: Email agent created: {email_agent}")  # Debug
+                    
+                    print("DEBUG: Creating scheduler agent")  # Debug
+                    scheduler_agent = create_scheduler_agent()
+                    print(f"DEBUG: Scheduler agent created: {scheduler_agent}")  # Debug
+
+                    # 3. Send selection email
+                    with st.status("📧 Sending confirmation email...", expanded=True) as status:
+                        print(f"DEBUG: Attempting to send email to {st.session_state.candidate_email}")  # Debug
+                        send_selection_email(
+                            email_agent,
+                            st.session_state.candidate_email,
+                            role
+                        )
+                        print("DEBUG: Email sent successfully")  # Debug
+                        status.update(label="✅ Confirmation email sent!")
+
+                    # 4. Schedule interview
+                    with st.status("📅 Scheduling interview...", expanded=True) as status:
+                        print("DEBUG: Attempting to schedule interview")  # Debug
+                        schedule_interview(
+                            scheduler_agent,
+                            st.session_state.candidate_email,
+                            email_agent,
+                            role
+                        )
+                        print("DEBUG: Interview scheduled successfully")  # Debug
+                        status.update(label="✅ Interview scheduled!")
+
+                    print("DEBUG: All processes completed successfully")  # Debug
+                    st.success("""
+                        🎉 Application Successfully Processed!
+                        
+                        Please check your email for:
+                        1. Selection confirmation ✅
+                        2. Interview details with Zoom link 🔗
+                        
+                        Next steps:
+                        1. Review the role requirements
+                        2. Prepare for your technical interview
+                        3. Join the interview 5 minutes early
+                    """)
+
+                except Exception as e:
+                    print(f"DEBUG: Error occurred: {str(e)}")  # Debug
+                    print(f"DEBUG: Error type: {type(e)}")  # Debug
+                    import traceback
+                    print(f"DEBUG: Full traceback: {traceback.format_exc()}")  # Debug
+                    st.error(f"An error occurred: {str(e)}")
+                    st.error("Please try again or contact support.")
+
+    # Reset button
+    if st.sidebar.button("Reset Application"):
+        for key in st.session_state.keys():
+            if key != 'openai_api_key':
+                del st.session_state[key]
+        st.rerun()
+
+if __name__ == "__main__":
+    main()
