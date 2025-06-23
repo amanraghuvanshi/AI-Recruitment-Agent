@@ -271,3 +271,49 @@ def send_rejection_email(email_agent: Agent, to_email : str, role : str, feedbac
         The tone should be like a human writing a quick but thoughtful email.
         """
     )
+    
+def schedule_interview(scheduler: Agent, candidate_email: str, email_agent: Agent, role: str) -> None:
+    """
+    Schedule interview during business hours (9 AM - 5 PM IST)
+    """
+    try:
+        # getting the current time
+        ist_tz = pytz.timezone("Asia/Kolkata")
+        current_time_ist = datetime.now(ist_tz)
+        
+        tomorrow_ist = current_time_ist + timedelta(days=1)
+        interview_time = tomorrow_ist.replace(hour=11, minute=0, second=0, microsecond=0)
+        formatted_time = interview_time.strftime("%Y-%m-%dT%H:%M:%S")
+        
+        meeting_resp = scheduler.run(
+            f"""Schedule a 60-minute technical interview with these specifications:
+                - Title: '{role} Technical Interview'
+                - Date: {formatted_time}
+                - Timezone: IST (Indian Standard Time)
+                - Attendee: {candidate_email}
+                
+            Important Notes:
+                - The meeting must be between 9 AM - 5 PM IST
+                - Use IST (UTC+5:30) timezone for all communications
+                - Include timezone information in the meeting details
+                - Ask him to be confident and not so nervous and prepare well for the interview
+                - Also, include a small joke or sarcasm to make him relax.
+            """
+        )
+        
+        st.success("Interview Scheduled Successfully! Check your email for details.")
+    except Exception as e:
+        logger.error(f"Error scheduling Interview: {str(e)}")
+        st.error("Unable to schedule interview. Please try again")
+        
+def main() -> None:
+    st.title("HeyHR Aide 🏢")
+    
+    init_session_state()
+    
+    with st.sidebar:
+        st.header("Configurations")
+        
+        # OpenAI configurations
+        st.subheader("OpenAI Configurations")
+        api_key = st.text_input("OpenAI API Key", placeholder="API key here", type="password", value=st.session_state.openai_api_key, help="Get your OpenAI API Key from platform.openai.com")
