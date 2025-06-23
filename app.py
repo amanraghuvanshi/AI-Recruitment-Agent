@@ -245,7 +245,7 @@ def send_selection_email(email_agent: Agent, to_email: str, role: str) -> None:
         Send an email to {to_email} regarding their selection for the {role} position.
         The email should:
         1. Congratulate them on being selected.
-        2. Explain the enxt steps in the process.
+        2. Explain the next steps in the process.
         3. Mention that they will receive interview details shortly.
         4. The name of the company is {st.session_state.company_name}.
         """
@@ -255,3 +255,19 @@ def send_rejection_email(email_agent: Agent, to_email : str, role : str, feedbac
     """
     Send a rejection mail with constructive feedback
     """
+    email_agent.run(
+        f"""
+        Send an email to {to_email} regarding their application for the {role} position.
+        Use this specific style:
+        1. Avoid unnecessary capital letters.
+        2. Be empathetic and human
+        3. Mention specific feedback from: {feedback}
+        4. Encourage them to upskill and try again
+        5. Suggest some learning resources based on missing skills.
+        6. End the email with exactly:
+            Best Regards,
+            Team HR at {st.session_state.company_name}
+        Do not include any name in the signature.
+        The tone should be like a human writing a quick but thoughtful email.
+        """
+    )
