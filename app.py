@@ -193,3 +193,65 @@ def extract_text_from_pdf(pdf_file) -> str:
     except Exception as e:
         st.error(f"Error while parsing PDF File: {str(e)}")
         return ""
+
+def analyze_resume(resume_text: str, 
+                   role: Literal["ai_ml_engineer", "frontend_engineer", "backend_engineer"],
+                   analyzer: Agent) -> Tuple[bool, str]:
+    try:
+        resp = analyzer.run(
+            f"""Please analyze this resume against the following requirements and provide your response in valid JSON format:
+            Role Requirements:
+            {ROLE_REQUIREMENTS[role]}
+            Resume Text:
+            {resume_text}
+            
+            Your response must be a valid JSON object, just like this:
+            {{
+                "selected":true/false,
+                "feedback":"Detailed Feedback explaining decision",
+                "matching_skills":["skill1", "skill2"],
+                "missing_skills":["skill1", "skill2"],
+                "experience_level":"junior/mid/senior"
+            }}
+            
+            Evaluation Criteria:
+            1. Match at least 70% of required skills.
+            2. Consider both theoritical knowledge and pratical knowledge.
+            3. Value project experience and real-world applications.
+            4. Consider transferrable skills from similar technologies.
+            5. Look for evidence for continuous learning and adaptability.
+            Important: Return ONLY the JSON object without any formatting or backticks.
+            """
+        )
+        
+        assistant_message = next((msg.content for msg in resp.messages if msg.role == "assistant"), None)
+        
+        if not assistant_message:
+            raise ValueError("No assistant message found in the response")
+        result = json.loads(assistant_message.strip())
+        if not isinstance(result, dict) or not all(k in result for k in ["selected", "feedback"]):
+            raise ValueError("Invalid Response Format")
+        return result["selected"], result["feedback"]
+    except (json.JSONDecodeError, ValueError) as e:
+        st.error(f"Error, while decoding JSON or due to format: {str(e)}")
+        return False, f"Error while analyzing resume: {str(e)}"
+
+def send_selection_email(email_agent: Agent, to_email: str, role: str) -> None:
+    """
+    Send a selection email with a congratuations.
+    """
+    email_agent.run(
+        f"""
+        Send an email to {to_email} regarding their selection for the {role} position.
+        The email should:
+        1. Congratulate them on being selected.
+        2. Explain the enxt steps in the process.
+        3. Mention that they will receive interview details shortly.
+        4. The name of the company is {st.session_state.company_name}.
+        """
+    )
+
+def send_rejection_email(email_agent: Agent, to_email : str, role : str, feedback : str) -> None:
+    """
+    Send a rejection mail with constructive feedback
+    """
