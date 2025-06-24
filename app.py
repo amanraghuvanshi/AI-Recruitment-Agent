@@ -159,7 +159,7 @@ def create_email_agent() -> Agent:
 
 def create_scheduler_agent() -> Agent:
     zoom_tools = CustomZoomTool(
-        account_id = st.session_state.zoom_accound_id,
+        account_id = st.session_state.zoom_account_id,
         client_id = st.session_state.zoom_client_id,
         client_secret = st.session_state.zoom_client_secret
     )
@@ -187,12 +187,16 @@ def create_scheduler_agent() -> Agent:
 def extract_text_from_pdf(pdf_file) -> str:
     try:
         pdf_reader = PyPDF2.PdfReader(pdf_file)
+        text = ""  # Initialize the variable here
         for page in pdf_reader.pages:
-            text += page.extract_text()
+            page_text = page.extract_text()
+            if page_text:  # Some pages may return None
+                text += page_text
         return text
     except Exception as e:
         st.error(f"Error while parsing PDF File: {str(e)}")
         return ""
+
 
 def analyze_resume(resume_text: str, 
                    role: Literal["ai_ml_engineer", "frontend_engineer", "backend_engineer"],
@@ -207,11 +211,11 @@ def analyze_resume(resume_text: str,
             
             Your response must be a valid JSON object, just like this:
             {{
-                "selected":true/false,
-                "feedback":"Detailed Feedback explaining decision",
-                "matching_skills":["skill1", "skill2"],
-                "missing_skills":["skill1", "skill2"],
-                "experience_level":"junior/mid/senior"
+                "selected": true,
+                "feedback": "The resume shows strong alignment with the AI/ML Engineer role, particularly in TensorFlow and Python.",
+                "matching_skills": ["Python", "TensorFlow", "Scikit-learn"],
+                "missing_skills": ["Kubernetes", "Docker"],
+                "experience_level": "mid"
             }}
             
             Evaluation Criteria:
@@ -451,7 +455,7 @@ def main() -> None:
                         try:
                             send_rejection_email(
                             email_agent = email_agent,
-                            to_mail = email,
+                            to_email = email,
                             role = role, 
                             feedback = feedback
                             )
